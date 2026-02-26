@@ -61,7 +61,7 @@ class NoteAPIClient:
         
         result = self._request('POST', url, headers=headers, json=data)
         
-        logger.debug(f"create_article result: {json.dumps(result, ensure_ascii=False)}")
+        logger.error(f"create_article raw response: {json.dumps(result, ensure_ascii=False)}")
         
         if result and 'data' in result:
             article_id = result['data'].get('id')
