@@ -60,17 +60,19 @@ class ContentGenerator:
 """
         
         try:
-            # response_mimetype を使用して確実なJSON形式のレスポンスを要求する
-            response = self.model.generate_content(
-                prompt,
-                generation_config=genai.types.GenerationConfig(
-                    response_mime_type="application/json",
-                ),
-            )
+            # プロンプト内で強力にJSON出力を要求しているため、単に generate_content を呼ぶ
+            response = self.model.generate_content(prompt)
             
+            # JSON部分を確実に抽出するクリーンアップ処理
+            result_text = response.text.strip()
+            if "```json" in result_text:
+                result_text = result_text.split("```json")[1].split("```")[0].strip()
+            elif "```" in result_text:
+                result_text = result_text.split("```")[1].strip()
+                
             import json
             # JSON パースエラー(Invalid control character)を避けるために strict=False を指定
-            data = json.loads(response.text, strict=False)
+            data = json.loads(result_text, strict=False)
             
             title = data.get('title', f"無題: {theme}")
             content = data.get('content', "コンテンツの生成に失敗しました。")
