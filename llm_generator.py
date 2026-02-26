@@ -60,16 +60,17 @@ class ContentGenerator:
 """
         
         try:
-            response = self.model.generate_content(prompt)
-            # JSON部分をパース（Geminiが```jsonで囲んで返す場合もあるためクリーンアップ）
-            result_text = response.text.strip()
-            if result_text.startswith("```json"):
-                result_text = result_text[7:]
-            if result_text.endswith("```"):
-                result_text = result_text[:-3]
-                
+            # response_mimetype を使用して確実なJSON形式のレスポンスを要求する
+            response = self.model.generate_content(
+                prompt,
+                generation_config=genai.types.GenerationConfig(
+                    response_mime_type="application/json",
+                ),
+            )
+            
             import json
-            data = json.loads(result_text.strip())
+            # JSON パースエラー(Invalid control character)を避けるために strict=False を指定
+            data = json.loads(response.text, strict=False)
             
             title = data.get('title', f"無題: {theme}")
             content = data.get('content', "コンテンツの生成に失敗しました。")
