@@ -26,6 +26,9 @@ class NoteAPIClient:
                 
         self.base_headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Origin': 'https://note.com',
+            'Referer': 'https://note.com/new',
+            'X-Requested-With': 'XMLHttpRequest'
         }
 
     def _request(self, method, url, **kwargs):
