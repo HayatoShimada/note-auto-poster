@@ -13,6 +13,7 @@ class NoteAPIClient:
         Args:
             cookies: セッションCookie文字列 (ex: 'note_session=xxx; ...')
         """
+        self.cookies = {}
         if '=' not in cookies:
             # ユーザーが_note_session_v5=XXX の形式ではなく値だけを設定した場合のフォールバック
             # 最近の仕様に合わせて _note_session_v5 をデフォルトとする
