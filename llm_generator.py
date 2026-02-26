@@ -61,7 +61,8 @@ class ContentGenerator:
   代わりに、読者や投稿者が後から手動で画像を挿入しやすいように、以下のような**テキストリンク付きの引用ブロック**として画像URLを複数箇所に配置してください。
   例: 
   > 📷 **画像挿入推奨**: `vintage fashion`
-  > [参考用フリー素材(Unsplash)](https://source.unsplash.com/featured/?vintage,fashion)
+  > [参考用フリー素材(Unsplash)](https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=800&q=80) 
+  ※URL部分はダミーではなく、可能な限り実際の高品質で実在するUnsplash画像への直リンク(https://images.unsplash.com/...)を提示してください。
 
 【出力フォーマット】
 以下の形式で出力してください。タイトル（1行のみ）の後に `---BODY---` という区切り文字を入れ、その後にMarkdown形式の本文を書いてください。
