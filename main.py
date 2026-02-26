@@ -42,9 +42,8 @@ def main():
     footer = "\n\n---\n*※この記事はLLM（AI）によって自動生成された下書きです。内容は投稿者が確認した後に公開されています。*\n"
     md_content += footer
 
-    # Markdown -> HTML 変換
     # noteの仕様に合わせてシンプルなHTMLにするため、拡張は基本設定
-    html_content = markdown.markdown(md_content, extensions=['tables'])
+    html_content = markdown.markdown(md_content, extensions=['tables', 'nl2br', 'fenced_code', 'sane_lists'])
 
     # note API を用いて下書き保存
     logger.info("note非公式APIで下書き保存中...")

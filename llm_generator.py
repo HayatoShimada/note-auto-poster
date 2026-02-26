@@ -56,16 +56,20 @@ class ContentGenerator:
 - 記事の構成は見出し(##, ###)を使って見やすくしてください。
 - トーン＆マナーは「親しみやすく、かつ専門的」なハイブリッドでお願いします。
 - 過去の内容とかぶらないような独自性を持たせてください。
+- 【重要】Google検索ツールを使用して、最新の動向やトレンド情報、具体的なブランド動向などを踏まえた説得力のある最新の内容にしてください。
+- 【重要】記事の視覚的な魅力を高めるため、見出しの区切りなどに適宜、画像メインで魅力が伝わるように関連画像（高画質な写真）をMarkdown構文で複数枚挿入してください。
+  ※画像URLには、Unsplashの動的プレースホルダー画像（例: `![イメージ画像](https://source.unsplash.com/featured/?vintage,fashion)`）などを活用し、記事内容にマッチする英語の検索キーワードを指定してください。
 """
         
         try:
-            # 最新の Structured Outputs の仕組みを使ってリクエスト
+            # 最新の Structured Outputs の仕組みと Google Search Grounding を使用
             response = self.client.models.generate_content(
                 model=self.model_name,
                 contents=prompt,
                 config={
                     "response_mime_type": "application/json",
                     "response_json_schema": ArticleDraft.model_json_schema(),
+                    "tools": [{"google_search": {}}],
                 },
             )
             
