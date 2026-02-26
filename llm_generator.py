@@ -1,9 +1,15 @@
 import os
-import google.generativeai as genai
+from google import genai
+from pydantic import BaseModel, Field
 import logging
 from typing import Tuple
 
 logger = logging.getLogger(__name__)
+
+# 出力形式を定義する Pydantic モデル
+class ArticleDraft(BaseModel):
+    title: str = Field(description="note向けの魅力的な記事のタイトル")
+    content: str = Field(description="Markdown形式の記事本文")
 
 class ContentGenerator:
     def __init__(self, api_key: str):
@@ -15,13 +21,13 @@ class ContentGenerator:
         """
         if not api_key:
             logger.warning("Gemini API key is not set. Dummy content will be generated.")
-            self.api_key = None
+            self.client = None
             return
             
-        self.api_key = api_key
-        genai.configure(api_key=api_key)
+        # SDK v1.0.0以降の新しいクライアント初期化
+        self.client = genai.Client(api_key=api_key)
         # Gemini 2.5 Flash を使用
-        self.model = genai.GenerativeModel('gemini-2.5-flash')
+        self.model_name = 'gemini-2.5-flash'
 
     def generate_article(self, theme: str, instructions: str) -> Tuple[str, str]:
         """
@@ -34,13 +40,12 @@ class ContentGenerator:
         Returns:
             Tuple[str, str]: (タイトル, Markdown形式の本文)
         """
-        if not self.api_key:
+        if not self.client:
             return f"【テスト】{theme}", f"# テスト記事\n\nテーマ: {theme}\n\nこれはGemini APIキーが設定されていない場合のダミーテキストです。"
 
         prompt = f"""
 あなたはプロの古着・ファッションライターです。
 以下のテーマと指示に基づいて、note向けの魅力的な記事を作成してください。
-出力は「記事のタイトル」と「Markdown形式の本文」のみとし、JSON形式で返してください。
 
 【テーマ】
 {theme}
@@ -51,33 +56,23 @@ class ContentGenerator:
 - 記事の構成は見出し(##, ###)を使って見やすくしてください。
 - トーン＆マナーは「親しみやすく、かつ専門的」なハイブリッドでお願いします。
 - 他の曜日の内容とかぶらないような独自性を持たせてください。
-
-【出力フォーマット】（必ずこのJSON構造に従うこと）
-{{
-  "title": "ここに記事のタイトルを含める",
-  "content": "ここにMarkdown形式の本文を含める"
-}}
 """
         
         try:
-            # プロンプト内で強力にJSON出力を要求しているため、単に generate_content を呼ぶ
-            response = self.model.generate_content(prompt)
+            # 最新の Structured Outputs の仕組みを使ってリクエスト
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=prompt,
+                config={
+                    "response_mime_type": "application/json",
+                    "response_json_schema": ArticleDraft.model_json_schema(),
+                },
+            )
             
-            # JSON部分を確実に抽出するクリーンアップ処理
-            result_text = response.text.strip()
-            if "```json" in result_text:
-                result_text = result_text.split("```json")[1].split("```")[0].strip()
-            elif "```" in result_text:
-                result_text = result_text.split("```")[1].strip()
-                
-            import json
-            # JSON パースエラー(Invalid control character)を避けるために strict=False を指定
-            data = json.loads(result_text, strict=False)
+            # レスポンス文字列を Pydantic モデルでバリデーションしつつパース
+            article_draft = ArticleDraft.model_validate_json(response.text)
             
-            title = data.get('title', f"無題: {theme}")
-            content = data.get('content', "コンテンツの生成に失敗しました。")
-            
-            return title, content
+            return article_draft.title, article_draft.content
             
         except Exception as e:
             logger.error(f"Failed to generate article: {e}")
