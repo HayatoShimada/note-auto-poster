@@ -73,9 +73,21 @@ class NoteAPIClient:
         if result and 'data' in result:
             article_id = result['data'].get('id')
             article_key = result['data'].get('key')
+            
+            # APIの仕様上、初期作成POSTでは本文が保存されないため、直後にdraft_saveで更新する
+            if article_id:
+                save_url = f'https://note.com/api/v1/text_notes/draft_save?id={article_id}'
+                save_data = {
+                    'name': title,
+                    'body': html_content,
+                }
+                save_result = self._request('POST', save_url, headers=headers, json=save_data)
+                if not save_result or not save_result.get('data', {}).get('result'):
+                    logger.warning(f"記事は作成されましたが、本文の保存(draft_save)に失敗しました。ID: {article_id}")
+
             logger.info(f"記事作成成功！ ID: {article_id}")
             return article_id, article_key
-            
+
         logger.error(f"create_article failed. API response was not as expected: {result}")
         return None, None
 
