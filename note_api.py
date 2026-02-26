@@ -15,10 +15,14 @@ class NoteAPIClient:
         """
         self.cookies = {}
         # Simple cookie parsing
-        for cookie in cookies.split(';'):
-            if '=' in cookie:
-                k, v = cookie.strip().split('=', 1)
-                self.cookies[k] = v
+        if '=' not in cookies:
+            # ユーザーが "note_session=XXX" の形式ではなく値だけを設定した場合のフォールバック
+            self.cookies['note_session'] = cookies.strip()
+        else:
+            for cookie in cookies.split(';'):
+                if '=' in cookie:
+                    k, v = cookie.strip().split('=', 1)
+                    self.cookies[k] = v
                 
         self.base_headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
