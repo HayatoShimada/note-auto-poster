@@ -60,11 +60,16 @@ class NoteAPIClient:
         }
         
         result = self._request('POST', url, headers=headers, json=data)
+        
+        logger.debug(f"create_article result: {json.dumps(result, ensure_ascii=False)}")
+        
         if result and 'data' in result:
             article_id = result['data'].get('id')
             article_key = result['data'].get('key')
             logger.info(f"記事作成成功！ ID: {article_id}")
             return article_id, article_key
+            
+        logger.error(f"create_article failed. API response was not as expected: {result}")
         return None, None
 
     def update_article(self, article_id: str, title: str, html_content: str):
