@@ -9,6 +9,12 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 def main():
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(dotenv_path='.env.local')
+    except ImportError:
+        pass
+
     # 必須環境変数の取得
     note_cookies = os.environ.get("NOTE_COOKIES")
     gemini_api_key = os.environ.get("GEMINI_API_KEY")

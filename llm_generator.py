@@ -59,24 +59,47 @@ class ContentGenerator:
 - 【重要】Google検索ツールを使用して、最新の動向やトレンド情報、具体的なブランド動向などを踏まえた説得力のある最新の内容にしてください。
 - 【重要】記事の視覚的な魅力を高めるため、見出しの区切りなどに適宜、画像メインで魅力が伝わるように関連画像（高画質な写真）をMarkdown構文で複数枚挿入してください。
   ※画像URLには、Unsplashの動的プレースホルダー画像（例: `![イメージ画像](https://source.unsplash.com/featured/?vintage,fashion)`）などを活用し、記事内容にマッチする英語の検索キーワードを指定してください。
+
+【出力フォーマット】
+以下の形式で出力してください。タイトル（1行のみ）の後に `---BODY---` という区切り文字を入れ、その後にMarkdown形式の本文を書いてください。
+
+<title>
+---BODY---
+<content>
 """
         
         try:
-            # 最新の Structured Outputs の仕組みと Google Search Grounding を使用
+            # Google Search Grounding を使用
             response = self.client.models.generate_content(
                 model=self.model_name,
                 contents=prompt,
                 config={
-                    "response_mime_type": "application/json",
-                    "response_json_schema": ArticleDraft.model_json_schema(),
                     "tools": [{"google_search": {}}],
                 },
             )
             
-            # レスポンス文字列を Pydantic モデルでバリデーションしつつパース
-            article_draft = ArticleDraft.model_validate_json(response.text)
+            text = response.text.strip()
             
-            return article_draft.title, article_draft.content
+            # ---BODY--- で分割してタイトルと本文を取得
+            parts = text.split("---BODY---", 1)
+            if len(parts) == 2:
+                title = parts[0].strip()
+                content = parts[1].strip()
+            else:
+                # 区切り文字がない場合のフォールバック（最初の行をタイトルとみなす）
+                lines = text.split('\n', 1)
+                title = lines[0].strip()
+                content = lines[1].strip() if len(lines) > 1 else ""
+                
+            # 不要なマークダウンコードブロックのバッククォートなどをクリーンアップ
+            title = title.replace('#', '').strip()
+            if content.startswith('```markdown'):
+                content = content[11:]
+            if content.endswith('```'):
+                content = content[:-3]
+            content = content.strip()
+            
+            return title, content
             
         except Exception as e:
             logger.error(f"Failed to generate article: {e}")
