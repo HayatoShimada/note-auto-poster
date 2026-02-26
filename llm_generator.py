@@ -20,8 +20,8 @@ class ContentGenerator:
             
         self.api_key = api_key
         genai.configure(api_key=api_key)
-        # Gemini 1.5 Pro または Flash を使用
-        self.model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        # Gemini 2.5 Flash を使用
+        self.model = genai.GenerativeModel('gemini-2.5-flash')
 
     def generate_article(self, theme: str, instructions: str) -> Tuple[str, str]:
         """
