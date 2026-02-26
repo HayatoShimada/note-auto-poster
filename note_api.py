@@ -13,11 +13,10 @@ class NoteAPIClient:
         Args:
             cookies: セッションCookie文字列 (ex: 'note_session=xxx; ...')
         """
-        self.cookies = {}
-        # Simple cookie parsing
         if '=' not in cookies:
-            # ユーザーが "note_session=XXX" の形式ではなく値だけを設定した場合のフォールバック
-            self.cookies['note_session'] = cookies.strip()
+            # ユーザーが_note_session_v5=XXX の形式ではなく値だけを設定した場合のフォールバック
+            # 最近の仕様に合わせて _note_session_v5 をデフォルトとする
+            self.cookies['_note_session_v5'] = cookies.strip()
         else:
             for cookie in cookies.split(';'):
                 if '=' in cookie:
